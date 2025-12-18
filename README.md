@@ -1,4 +1,4 @@
-# LLM Council
+# High  Council
 
 ![llmcouncil](header.jpg)
 
