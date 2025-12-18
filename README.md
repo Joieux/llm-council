@@ -1,87 +1,85 @@
-# High  Council
+# High Counsel
 
-![llmcouncil](header.jpg)
+High Counsel is a local app that runs multiple LLMs as a council and produces a final synthesized answer through a chairman model.
 
-The idea of this repo is that instead of asking a question to your favorite LLM provider (e.g. OpenAI GPT 5.1, Google Gemini 3.0 Pro, Anthropic Claude Sonnet 4.5, xAI Grok 4, eg.c), you can group them into your "LLM Council". This repo is a simple, local web app that essentially looks like ChatGPT except it uses OpenRouter to send your query to multiple LLMs, it then asks them to review and rank each other's work, and finally a Chairman LLM produces the final response.
+It has:
+A Python backend that talks to OpenRouter
+A Vite frontend that streams responses
 
-In a bit more detail, here is what happens when you submit a query:
+## What you need
 
-1. **Stage 1: First opinions**. The user query is given to all LLMs individually, and the responses are collected. The individual responses are shown in a "tab view", so that the user can inspect them all one by one.
-2. **Stage 2: Review**. Each individual LLM is given the responses of the other LLMs. Under the hood, the LLM identities are anonymized so that the LLM can't play favorites when judging their outputs. The LLM is asked to rank them in accuracy and insight.
-3. **Stage 3: Final response**. The designated Chairman of the LLM Council takes all of the model's responses and compiles them into a single final answer that is presented to the user.
+Python 3.10 or newer
+Node.js and npm
+uv
 
-## Vibe Code Alert
+On macOS with Homebrew:
 
-This project was 99% vibe coded as a fun Saturday hack because I wanted to explore and evaluate a number of LLMs side by side in the process of [reading books together with LLMs](https://x.com/karpathy/status/1990577951671509438). It's nice and useful to see multiple responses side by side, and also the cross-opinions of all LLMs on each other's outputs. I'm not going to support it in any way, it's provided here as is for other people's inspiration and I don't intend to improve it. Code is ephemeral now and libraries are over, ask your LLM to change it in whatever way you like.
+brew install python node uv
 
 ## Setup
 
-### 1. Install Dependencies
+Clone and install:
 
-The project uses [uv](https://docs.astral.sh/uv/) for project management.
-
-**Backend:**
-```bash
+git clone https://github.com/Joieux/High-Counsel.git
+cd High-Counsel
 uv sync
-```
-
-**Frontend:**
-```bash
 cd frontend
 npm install
 cd ..
-```
 
-### 2. Configure API Key
+## Add your OpenRouter key
 
-Create a `.env` file in the project root:
+Create a .env file in the repo root:
 
-```bash
-OPENROUTER_API_KEY=sk-or-v1-...
-```
+OPENROUTER_API_KEY=sk-or-v1-yourkeyhere
 
-Get your API key at [openrouter.ai](https://openrouter.ai/). Make sure to purchase the credits you need, or sign up for automatic top up.
+Do not commit this file.
 
-### 3. Configure Models (Optional)
+## Configure the council
 
-Edit `backend/config.py` to customize the council:
+Edit backend/config.py and set your council members and chairman.
 
-```python
+Start simple first:
+
 COUNCIL_MODELS = [
-    "openai/gpt-5.1",
-    "google/gemini-3-pro-preview",
     "anthropic/claude-sonnet-4.5",
-    "x-ai/grok-4",
 ]
 
-CHAIRMAN_MODEL = "google/gemini-3-pro-preview"
-```
+CHAIRMAN_MODEL = "anthropic/claude-sonnet-4.5"
 
-## Running the Application
+Then add members one at a time.
 
-**Option 1: Use the start script**
-```bash
+Tip: if a model fails, it is usually a model id typo or a model that does not support your input type.
+
+## Run
+
+From the repo root:
+
 ./start.sh
-```
 
-**Option 2: Run manually**
+Frontend:
+http://localhost:5173
 
-Terminal 1 (Backend):
-```bash
-uv run python -m backend.main
-```
+Backend:
+http://localhost:8001
 
-Terminal 2 (Frontend):
-```bash
-cd frontend
-npm run dev
-```
+## Troubleshooting
 
-Then open http://localhost:5173 in your browser.
+401 Unauthorized in backend logs
+Your OpenRouter key is missing, empty, or not being loaded
 
-## Tech Stack
+400 Bad Request in backend logs
+Most often a model id typo, for example gpt 4o uses the letter o
 
-- **Backend:** FastAPI (Python 3.10+), async httpx, OpenRouter API
-- **Frontend:** React + Vite, react-markdown for rendering
-- **Storage:** JSON files in `data/conversations/`
-- **Package Management:** uv for Python, npm for JavaScript
+Backend crash but frontend still runs
+The frontend can appear healthy even when the backend failed to boot, so always trust the backend terminal output
+
+## Safety and secrets
+
+Never commit:
+.env
+data/conversations
+
+## License
+
+MIT
